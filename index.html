@@ -103,7 +103,8 @@
         }
         .res-label { font-size: 0.9rem; font-weight: 800; color: var(--text-gray); text-transform: uppercase; }
         .res-val { font-size: 4.5rem; font-weight: 900; color: var(--main); letter-spacing: -2px; line-height: 1; margin: 15px 0; }
-        .res-sub { font-size: 1.1rem; font-weight: 700; color: var(--text-gray); }
+        .res-sub { font-size: 1.1rem; font-weight: 700; color: var(--text-gray); margin-bottom: 10px; }
+        .res-advice { font-size: 0.85rem; font-weight: 800; color: #e91e63; min-height: 1.2em; }
 
         .footer-btns { display: flex; gap: 10px; margin-top: 30px; margin-bottom: 20px; }
         .kofi-btn { flex: 6; background: var(--main); color: #fff; padding: 14px; border-radius: var(--radius); text-decoration: none; font-weight: bold; font-size: 14px; display: flex; align-items: center; justify-content: center; }
@@ -128,7 +129,7 @@
     <div class="input-card">
         <div class="input-group">
             <span class="input-label">Item Price</span>
-            <input type="text" id="priceInput" placeholder="1000" inputmode="decimal" oninput="calculate()">
+            <input type="text" id="priceInput" placeholder="1000" inputmode="decimal" oninput="calculate()" autofocus>
             <button class="clear-btn" id="clr-price" onclick="clearInput('priceInput')">×</button>
         </div>
         <div class="input-group">
@@ -142,6 +143,7 @@
         <span class="res-label" id="resLabel">You must work for</span>
         <div class="res-val" id="resultHours">---</div>
         <div class="res-sub" id="resultDays">Hours of your life</div>
+        <div class="res-advice" id="resultAdvice"></div>
     </div>
 
     <div class="footer-btns">
@@ -172,11 +174,14 @@
     const clrWage = document.getElementById('clr-wage');
     const resultHours = document.getElementById('resultHours');
     const resultDays = document.getElementById('resultDays');
+    const resultAdvice = document.getElementById('resultAdvice');
 
     window.addEventListener('load', () => {
         const savedWage = localStorage.getItem('fc_life_wage');
         if (savedWage) wageInput.value = savedWage;
         calculate();
+        // モバイルでキーボードを自動で出すためフォーカス
+        priceInput.focus();
     });
 
     window.addEventListener('pageshow', () => {
@@ -194,19 +199,34 @@
 
         if (!isNaN(price) && !isNaN(wage) && wage > 0) {
             const hours = price / wage;
-            const days = hours / 8; // 8 hours per working day
+            const days = hours / 8;
             
             resultHours.innerText = formatNum(hours);
             resultDays.innerText = `≈ ${formatNum(days)} Working Days (8h/d)`;
+            
+            // 絶望のアドバイス
+            if (hours >= 160) {
+                resultAdvice.innerText = "That's a whole month of your life!";
+            } else if (hours >= 40) {
+                resultAdvice.innerText = "A full week of labor for this?";
+            } else if (hours >= 8) {
+                resultAdvice.innerText = "More than a full day of work.";
+            } else if (hours >= 1) {
+                resultAdvice.innerText = "Is it worth your hour?";
+            } else {
+                resultAdvice.innerText = "";
+            }
         } else {
             resultHours.innerText = '---';
             resultDays.innerText = 'Hours of your life';
+            resultAdvice.innerText = "";
         }
 
         updateBtns();
     }
 
     function updateBtns() {
+        clrBudget = clrPrice; // 変数名の互換性維持
         clrPrice.classList.toggle('active', priceInput.value !== '');
         clrWage.classList.toggle('active', wageInput.value !== '');
     }
